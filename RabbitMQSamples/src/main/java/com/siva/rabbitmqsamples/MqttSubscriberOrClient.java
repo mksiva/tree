@@ -81,8 +81,9 @@ public class MqttSubscriberOrClient {
 // wait to ensure subscribed messages are delivered
             
              //   Thread.sleep(3000);
-            
-            myClient.disconnect();
+            // If you want to get the message published to the queue, you should not disconnect. Rabbitmq will call your callback and post the message to you.
+            // If you disconnect, upon next connection subscription only, you will receive the messages.
+            //myClient.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
