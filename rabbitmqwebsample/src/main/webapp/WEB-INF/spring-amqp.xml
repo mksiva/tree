@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	   		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	   		  http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+			http://www.springframework.org/schema/rabbit
+			http://www.springframework.org/schema/rabbit/spring-rabbit-1.2.xsd">
+    
+    <rabbit:connection-factory id="connectionFactory"
+                               host="localhost" channel-cache-size="25" username="admin" password="welcome01" port="5672" virtual-host="/admin_vhost" />
+
+    <rabbit:admin connection-factory="connectionFactory" />
+    
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
+                     queue="myQueue" message-converter="amqpJson" />
+
+    <rabbit:queue name="myQueue" />
+
+    <rabbit:direct-exchange name="MyExchange" auto-delete="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="myQueue" key="myQueue" />
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <bean id="amqpJson"
+      class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter">
+        <property name="classMapper">
+            <bean class="org.springframework.amqp.support.converter.DefaultClassMapper">
+                <property name="defaultType" value="com.siva.rabbitmqweb.workers.PayLoadInTransactionRequest" />
+            </bean>
+        </property>
+    </bean>
+	
+    <rabbit:listener-container connection-factory="connectionFactory">
+        <rabbit:listener ref="payLoadTransactionWorker" method="listen" queue-names="mqtt-subscription-admin_vhostqos1" />
+    </rabbit:listener-container>
+    
+    <bean id="payLoadTransactionWorker" class="com.siva.rabbitmqweb.workers.PayLoadTransactionWorker" />
+            
+    <rabbit:topic-exchange name="amq.topic">
+        <rabbit:bindings>
+            <rabbit:binding exchange="amq.topic" pattern="mqtt_topic.iot.admin_vhost">
+            </rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+    
+    <rabbit:template id="amqpTopicTemplate" connection-factory="connectionFactory"  exchange="amq.topic" />	
+    
+    <bean id="payLoadMQTTTransactionWorker"  class="com.siva.rabbitmqweb.workers.PayLoadMQTTTransactionWorker"  />
+</beans>
