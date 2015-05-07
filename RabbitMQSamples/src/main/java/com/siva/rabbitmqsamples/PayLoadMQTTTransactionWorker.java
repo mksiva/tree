@@ -5,6 +5,7 @@
  */
 package com.siva.rabbitmqsamples;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -20,9 +21,20 @@ public class PayLoadMQTTTransactionWorker implements MqttCallback {
         System.out.println("connectionLost");        
     }
 
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    
     @Override
-    public void messageArrived(String string, MqttMessage mm) throws Exception {
-        System.out.println("MQTT Message received.----> " + new String(mm.getPayload()));
+    public void messageArrived(String string, MqttMessage mqttMessage) throws Exception {             
+        try {
+             PayLoadInTransactionRequest request = jsonObjectMapper.readValue(mqttMessage.getPayload(), 
+                PayLoadInTransactionRequest.class);                  
+             System.out.println("Payload received from the device:" + request.getDeviceId());
+        } catch (Exception e) {
+            //System.out.println(e.getMessage());
+            System.out.println("Unknown message format received.");
+        }
+       
+        System.out.println("MQTT Message received.----> " + new String(mqttMessage.getPayload()));
     }
 
     @Override

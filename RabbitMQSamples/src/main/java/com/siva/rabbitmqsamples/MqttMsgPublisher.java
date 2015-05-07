@@ -50,7 +50,7 @@ public class MqttMsgPublisher {
 */
     public void runClient() {
 // setup MQTT Client
-        String clientID = M2MIO_THING;
+        String clientID = M2MIO_THING + 1;
         connOpt = new MqttConnectOptions();
         connOpt.setCleanSession(false);
         connOpt.setKeepAliveInterval(30);
@@ -86,8 +86,17 @@ public class MqttMsgPublisher {
 // publish messages if publisher
         if (publisher) {
             for (int i = 1; i <= 10; i++) {
-                String pubMsg = "{\"pubmsgeee\":" + i + "}";
+                //String pubMsg = "{\"pubmsg\":" + i + "}";
                 int pubQoS = 1;
+//                String pubMsg = "{deviceId:123"+ i 
+//                        + ",hubId:123,temporature:34,location:CBE"
+//                        + "}";
+                 String pubMsg = "{\n"
+                + "    \"deviceId\" : \"123\",\n"
+                + "    \"hubId\" : \"123\",\n"
+                + "    \"temporature\" : 34,\n"
+                + "    \"location\" : \"CBE\"   \n"
+                + "}";
                 MqttMessage message = new MqttMessage(pubMsg.getBytes());
                 message.setQos(pubQoS);
                 message.setRetained(false);
