@@ -5,8 +5,12 @@
  */
 package com.siva.rabbitmqweb.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siva.rabbitmqweb.workers.PayLoadInTransactionRequest;
 import com.siva.rabbitmqweb.workers.PayLoadMQTTTransactionWorker;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
@@ -40,6 +44,9 @@ public class MonitorController {
     private Queue iotQueue;
 
     @Autowired
+    ObjectMapper jsonObjectMapper;
+
+    @Autowired
     private PayLoadMQTTTransactionWorker payLoadMQTTTransactionWorker;
 
     MqttClient myClient = null;
@@ -64,7 +71,13 @@ public class MonitorController {
             amqpTopicTemplate.convertAndSend(routingKey, message);
             responseMessage = "Published to '" + routingKey + "' : '" + message + "'";
         } else if ("mqtt".equalsIgnoreCase(protocol)) {
-            publishPayload();
+            String pubMsg = "{\n"
+                + "    \"deviceId\" : \"123\",\n"
+                + "    \"hubId\" : \"123\",\n"
+                + "    \"temporature\" : 34,\n"
+                + "    \"location\" : \"CBE\"   \n"
+                + "}";
+            publishPayload(pubMsg);
             responseMessage = "Mqtt msg is published.";
         } else {
             responseMessage = "Not Supported protocol [" + protocol + "]";
@@ -87,6 +100,17 @@ public class MonitorController {
         return "sent";
     }
 
+    @RequestMapping(value = "/post", method = RequestMethod.POST)
+     @ResponseBody
+     public String postPayLoad(@RequestBody final PayLoadInTransactionRequest request) {     
+        try {
+            String pubMsg = jsonObjectMapper.writeValueAsString(request);
+            publishPayload(pubMsg); 
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(MonitorController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     return "Object published";
+     }
     /*
      @RequestMapping(value = "/publishAMQP", method = RequestMethod.GET)
      @ResponseBody
@@ -118,9 +142,9 @@ public class MonitorController {
      publishPayload();
      return "published";
      } */
-    private void publishPayload() {
+    private void publishPayload(String pubMsg){
         //setup MQTT Client
-        String clientID = M2MIO_THING;
+        String clientID = M2MIO_THING + 1;
         connOpt = new MqttConnectOptions();
         connOpt.setCleanSession(false);
         connOpt.setKeepAliveInterval(30);
@@ -142,12 +166,12 @@ public class MonitorController {
         MqttTopic topic = myClient.getTopic(myTopic);
         int pubQoS = 1;
         //String pubMsg = "MQTT Message from IoTWeb by MQTTPublisher";
-        String pubMsg = "{\n"
-                + "    \"deviceId\" : \"123\",\n"
-                + "    \"hubId\" : \"123\",\n"
-                + "    \"temporature\" : 34,\n"
-                + "    \"location\" : \"CBE\"   \n"
-                + "}";
+//        String pubMsg = "{\n"
+//                + "    \"deviceId\" : \"123\",\n"
+//                + "    \"hubId\" : \"123\",\n"
+//                + "    \"temporature\" : 34,\n"
+//                + "    \"location\" : \"CBE\"   \n"
+//                + "}";
         MqttMessage message = new MqttMessage(pubMsg.getBytes());
         message.setQos(pubQoS);
         message.setRetained(false);
@@ -211,8 +235,8 @@ public class MonitorController {
 
         // disconnect
         try {
-            Thread.sleep(2000);
-            myClient.disconnect();
+            //Thread.sleep(2000);
+            //myClient.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }

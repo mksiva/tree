@@ -35,7 +35,7 @@
     </bean>
 	
     <rabbit:listener-container connection-factory="connectionFactory">
-        <rabbit:listener ref="payLoadTransactionWorker" method="listen" queue-names="mqtt-subscription-admin_vhostqos1" />
+        <rabbit:listener ref="payLoadTransactionWorker" method="listen" queue-names="myQueue" />
     </rabbit:listener-container>
     
     <bean id="payLoadTransactionWorker" class="com.siva.rabbitmqweb.workers.PayLoadTransactionWorker" />
@@ -50,4 +50,7 @@
     <rabbit:template id="amqpTopicTemplate" connection-factory="connectionFactory"  exchange="amq.topic" />	
     
     <bean id="payLoadMQTTTransactionWorker"  class="com.siva.rabbitmqweb.workers.PayLoadMQTTTransactionWorker"  />
+    
+    <!-- Object Mapper -->
+    <bean id="jsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/>
 </beans>

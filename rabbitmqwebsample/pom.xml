@@ -9,7 +9,7 @@
 
     <name>rabbitmqweb</name>
 
-   <repositories>
+    <repositories>
         <repository>
             <id>Paho</id>
             <name>paho-release</name>
@@ -85,10 +85,10 @@
             <version>1.4.4.RELEASE</version>
         </dependency>
         <dependency>
-<groupId>org.eclipse.paho</groupId>
-<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-<version>1.0.2</version>
-</dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.0.2</version>
+        </dependency>
 
     </dependencies>
 
